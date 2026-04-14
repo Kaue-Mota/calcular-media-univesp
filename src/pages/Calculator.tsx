@@ -1,11 +1,11 @@
 import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, Trash2, Calculator as CalculatorIcon, CheckCircle2, AlertCircle, XCircle, RefreshCw, Info } from 'lucide-react'
+import { Calculator as CalculatorIcon, CheckCircle2, AlertCircle, XCircle, RefreshCw, Info } from 'lucide-react'
 
 type Status = 'approved' | 'exam' | 'failed' | null
 
 interface Result {
-  activitiesAvg: number
+  avaAvg: number
   finalGrade: number
   status: Status
   examGrade?: number
@@ -56,32 +56,24 @@ const StatusBadge = ({ status, grade }: { status: Status; grade: number }) => {
 export default function Calculator() {
   const [examGrade, setExamGrade] = useState('')
   const [regularGrade, setRegularGrade] = useState('')
-  const [activities, setActivities] = useState<string[]>([''])
+  const [avaGrade, setAvaGrade] = useState('')
   const [result, setResult] = useState<Result | null>(null)
   const [mode, setMode] = useState<'final' | 'exam'>('final')
-
-  const addActivity = () => setActivities((a) => [...a, ''])
-  const removeActivity = (i: number) => setActivities((a) => a.filter((_, idx) => idx !== i))
-  const updateActivity = (i: number, v: string) =>
-    setActivities((a) => a.map((x, idx) => (idx === i ? v : x)))
 
   const reset = () => {
     setRegularGrade('')
     setExamGrade('')
-    setActivities([''])
+    setAvaGrade('')
     setResult(null)
   }
 
   const calculate = useCallback(() => {
     const reg = parseFloat(regularGrade.replace(',', '.'))
-    const validActivities = activities
-      .map((a) => parseFloat(a.replace(',', '.')))
-      .filter((n) => !isNaN(n))
+    const ava = parseFloat(avaGrade.replace(',', '.'))
 
-    if (isNaN(reg) || validActivities.length === 0) return
+    if (isNaN(reg) || isNaN(ava)) return
 
-    const activitiesAvg = validActivities.reduce((a, b) => a + b, 0) / validActivities.length
-    const finalGrade = clamp(reg * 0.6 + activitiesAvg * 0.4)
+    const finalGrade = clamp(reg * 0.6 + ava * 0.4)
     const status: Status = finalGrade >= 5 ? 'approved' : 'exam'
 
     if (mode === 'exam' && status === 'exam') {
@@ -89,15 +81,15 @@ export default function Calculator() {
       if (!isNaN(exam)) {
         const examFinal = clamp((finalGrade + exam) / 2)
         const examStatus: Status = examFinal >= 5 ? 'approved' : 'failed'
-        setResult({ activitiesAvg, finalGrade, status, examGrade: exam, examFinal, examStatus })
+        setResult({ avaAvg: ava, finalGrade, status, examGrade: exam, examFinal, examStatus })
         return
       }
     }
 
-    setResult({ activitiesAvg, finalGrade, status })
-  }, [regularGrade, activities, examGrade, mode])
+    setResult({ avaAvg: ava, finalGrade, status })
+  }, [regularGrade, avaGrade, examGrade, mode])
 
-  const canCalculate = regularGrade !== '' && activities.some((a) => a !== '')
+  const canCalculate = regularGrade !== '' && avaGrade !== ''
 
   return (
     <div className="max-w-3xl mx-auto px-4 sm:px-6 py-12">
@@ -156,77 +148,32 @@ export default function Calculator() {
           </div>
         </motion.div>
 
-        {/* Activities */}
+        {/* AVA grade */}
         <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.2 }} className="card">
           <div className="flex items-center justify-between mb-3">
             <label className="text-sm font-semibold text-univesp-200">
-              Notas das Atividades
-              <span className="ml-2 text-xs text-univesp-400 font-normal">(0 a 10 cada)</span>
+              Média das Atividades AVA
+              <span className="ml-2 text-xs text-univesp-400 font-normal">(0 a 10)</span>
             </label>
             <div className="glass rounded-xl px-3 py-1.5 text-xs text-univesp-300 flex items-center gap-1.5">
               <span className="text-emerald-400 font-bold">× 0,4</span>
               <span>= peso 40%</span>
             </div>
           </div>
-          <div className="space-y-3">
-            <AnimatePresence>
-              {activities.map((act, i) => (
-                <motion.div
-                  key={i}
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  exit={{ opacity: 0, height: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="flex items-center gap-3"
-                >
-                  <span className="text-univesp-400 text-sm font-medium w-6 shrink-0">#{i + 1}</span>
-                  <input
-                    type="number"
-                    min={0}
-                    max={10}
-                    step={0.1}
-                    value={act}
-                    onChange={(e) => updateActivity(i, e.target.value)}
-                    placeholder={`Atividade ${i + 1}`}
-                    className="input-field max-w-48"
-                  />
-                  {activities.length > 1 && (
-                    <button
-                      onClick={() => removeActivity(i)}
-                      className="p-2 rounded-xl text-red-400/60 hover:text-red-400 hover:bg-red-500/10 transition-all duration-200"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-
-            <button
-              onClick={addActivity}
-              className="flex items-center gap-2 text-sm text-univesp-300 hover:text-white glass hover:bg-white/10 px-4 py-2.5 rounded-xl transition-all duration-200 mt-2"
-            >
-              <Plus className="w-4 h-4" />
-              Adicionar atividade
-            </button>
-          </div>
-
-          {/* Live activities preview */}
-          {activities.some((a) => a !== '') && (
-            <div className="mt-4 pt-4 border-t border-white/5">
-              <p className="text-xs text-univesp-400">
-                Média das atividades:{' '}
-                <span className="text-emerald-400 font-bold">
-                  {fmt(
-                    activities
-                      .filter((a) => a !== '')
-                      .reduce((s, a) => s + parseFloat(a.replace(',', '.')), 0) /
-                      activities.filter((a) => a !== '').length || 0
-                  )}
-                </span>
-              </p>
-            </div>
-          )}
+          <input
+            type="number"
+            min={0}
+            max={10}
+            step={0.1}
+            value={avaGrade}
+            onChange={(e) => setAvaGrade(e.target.value)}
+            placeholder="Ex: 8,5"
+            className="input-field max-w-48"
+          />
+          <p className="text-xs text-univesp-500 mt-2 flex items-center gap-1.5">
+            <Info className="w-3 h-3" />
+            Insira a média já calculada pelo sistema AVA
+          </p>
         </motion.div>
 
         {/* Exam grade (mode === exam) */}
@@ -303,8 +250,8 @@ export default function Calculator() {
                   <span className="text-accent-400 font-bold">{fmt(parseFloat(regularGrade.replace(',', '.')) * 0.6)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-univesp-400">Média Atividades × 0,4</span>
-                  <span className="text-emerald-400 font-bold">{fmt(result.activitiesAvg * 0.4)}</span>
+                  <span className="text-univesp-400">Média AVA × 0,4</span>
+                  <span className="text-emerald-400 font-bold">{fmt(result.avaAvg * 0.4)}</span>
                 </div>
                 <div className="border-t border-white/10 pt-2 flex justify-between">
                   <span className="text-white font-semibold">Média Bimestral</span>
