@@ -1,31 +1,70 @@
-import { GraduationCap, Heart } from 'lucide-react'
 import { Link } from 'react-router-dom'
+import { Calculator, BarChart2, BookOpen, GraduationCap } from 'lucide-react'
 
 export default function Footer() {
   return (
-    <footer className="border-t border-white/5 mt-auto py-8">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-univesp-500 to-univesp-700 flex items-center justify-center">
-              <GraduationCap className="w-4 h-4 text-white" />
+    <footer className="bg-univ-950 text-white mt-auto">
+      {/* Red accent line */}
+      <div className="h-1 bg-primary-700" />
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+
+          {/* Brand */}
+          <div>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 bg-primary-700 rounded flex items-center justify-center">
+                <span className="text-white font-black text-sm">N</span>
+              </div>
+              <div>
+                <p className="font-black text-white text-sm tracking-tight leading-none">NOTAS UNIVESP</p>
+                <p className="text-univ-400 text-xs mt-0.5">Calculadora não oficial</p>
+              </div>
             </div>
-            <div>
-              <span className="font-bold text-white text-sm">Notas UNIVESP</span>
-              <p className="text-univesp-400 text-xs">Calculadora não oficial</p>
-            </div>
+            <p className="text-univ-400 text-sm leading-relaxed">
+              Ferramenta criada para ajudar estudantes da UNIVESP a calcular médias e simular resultados.
+            </p>
           </div>
 
-          <nav className="flex items-center gap-6 text-sm text-univesp-400">
-            <Link to="/" className="hover:text-white transition-colors">Início</Link>
-            <Link to="/calculadora" className="hover:text-white transition-colors">Calculadora</Link>
-            <Link to="/simulador" className="hover:text-white transition-colors">Simulador</Link>
-            <Link to="/guia" className="hover:text-white transition-colors">Guia</Link>
-          </nav>
+          {/* Links */}
+          <div>
+            <p className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Ferramentas</p>
+            <nav className="space-y-2.5">
+              {[
+                { to: '/calculadora', label: 'Calculadora de Média', icon: Calculator },
+                { to: '/simulador',   label: 'Simulador de Notas',   icon: BarChart2 },
+                { to: '/guia',        label: 'Guia Completo',         icon: BookOpen },
+              ].map(({ to, label, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  className="flex items-center gap-2 text-univ-400 hover:text-white text-sm transition-colors duration-200"
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {label}
+                </Link>
+              ))}
+            </nav>
+          </div>
 
-          <p className="text-univesp-500 text-xs flex items-center gap-1.5">
-            Feito com <Heart className="w-3 h-3 text-accent-500 fill-accent-500" /> para estudantes UNIVESP
-          </p>
+          {/* Info */}
+          <div>
+            <p className="text-white font-semibold text-sm mb-4 uppercase tracking-wider">Informações</p>
+            <div className="space-y-2 text-univ-400 text-sm">
+              <p className="flex items-start gap-2">
+                <GraduationCap className="w-4 h-4 mt-0.5 shrink-0 text-primary-500" />
+                <span>Esta é uma ferramenta <strong className="text-univ-200">não oficial</strong> e independente da UNIVESP.</span>
+              </p>
+              <p className="text-univ-500 text-xs mt-4">
+                As regras de avaliação podem ser atualizadas pela instituição. Consulte sempre o portal oficial da UNIVESP.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-univ-800 mt-10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-univ-500 text-xs">
+          <p>© {new Date().getFullYear()} Notas UNIVESP. Ferramenta não oficial.</p>
+          <Link to="/" className="hover:text-white transition-colors">Início</Link>
         </div>
       </div>
     </footer>
